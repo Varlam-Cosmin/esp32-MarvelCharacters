@@ -1,0 +1,3 @@
+{"action":"getNetworks","teamId":"A15"}
+
+{"action":"getDetails","id":"301"}

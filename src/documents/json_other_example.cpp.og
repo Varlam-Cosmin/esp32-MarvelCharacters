@@ -1,0 +1,161 @@
+#include <Arduino.h>
+#include <ArduinoJson.h>
+
+void setup()
+{
+    // put your setup code here, to run once:
+    Serial.begin(115200);
+    // See the comments at the end for the formatted JSON data
+    String JSONString = "[{ \"id\": 1, \"name\": \"Ainslie Adlem\", \"occupation\": \"Geologist III\", \"gender\": \"M\", \"image\": \"http:\/\/dummyimage.com\/121x131.png\/dddddd\/000000\", \"details\": \"Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.\"}, { \"id\": 2, \"name\": \"Lexi Faircliffe\", \"occupation\": \"Registered Nurse\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/122x174.png\/5fa2dd\/ffffff\", \"details\": \"Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.\"}, { \"id\": 3, \"name\": \"Issy Deluca\", \"occupation\": \"Professor\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/127x117.png\/ff4444\/ffffff\", \"details\": \"Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.\"}, { \"id\": 4, \"name\": \"Rahal Abthorpe\", \"occupation\": \"Software Consultant\", \"gender\": \"M\", \"image\": \"http:\/\/dummyimage.com\/203x131.png\/5fa2dd\/ffffff\", \"details\": \"In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.\"}, { \"id\": 5, \"name\": \"Fairleigh Few\", \"occupation\": \"Help Desk Technician\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/112x165.png\/dddddd\/000000\", \"details\": \"Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.\"}, { \"id\": 6, \"name\": \"Harlene Feechan\", \"occupation\": \"Staff Accountant I\", \"gender\": \"M\", \"image\": \"http:\/\/dummyimage.com\/164x240.png\/5fa2dd\/ffffff\", \"details\": \"Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.\"}, { \"id\": 7, \"name\": \"Juana McKeeman\", \"occupation\": \"Senior Sales Associate\", \"gender\": \"M\", \"image\": \"http:\/\/dummyimage.com\/248x151.png\/ff4444\/ffffff\", \"details\": \"Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.\"}, { \"id\": 8, \"name\": \"Clayson Rojahn\", \"occupation\": \"General Manager\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/119x193.png\/cc0000\/ffffff\", \"details\": \"Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.\"}, { \"id\": 9, \"name\": \"Cecilius Stileman\", \"occupation\": \"Accounting Assistant III\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/108x156.png\/5fa2dd\/ffffff\", \"details\": \"Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus.\"}, { \"id\": 10, \"name\": \"Selma Fant\", \"occupation\": \"Product Engineer\", \"gender\": \"F\", \"image\": \"http:\/\/dummyimage.com\/158x227.png\/cc0000\/ffffff\", \"details\": \"Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.\"}]";
+    Serial.println(JSONString);
+
+    // Deserialize data using the ArduinoJson library
+    DynamicJsonDocument JSONDocument(15000);
+    DeserializationError error = deserializeJson(JSONDocument, JSONString.c_str());
+
+    if (error)
+    {
+        Serial.println(error.c_str());
+    }
+    else
+    {
+        // Define a JsonArray from the JSONDocument, since the JSONString is an array of objects
+        JsonArray list = JSONDocument.as<JsonArray>();
+
+        // Iterate the JsonArray array (see docs for the library)
+        int index = 1;
+        for (JsonVariant value : list)
+        {
+            // Get the current item in the iterated list as a JsonObject
+            JsonObject listItem = value.as<JsonObject>();
+
+            // Process the data
+            // This example will simply print the array information as follows:
+            // Index. Name (Gender): Occupation
+            // Details
+            Serial.print(index);
+            Serial.print(". ");
+            Serial.print(listItem["name"].as<String>());
+            Serial.print(" (");
+            Serial.print(listItem["gender"].as<String>());
+            Serial.print("): ");
+            Serial.print(listItem["gender"].as<String>());
+            Serial.println(listItem["occupation"].as<String>());
+            Serial.println(listItem["details"].as<String>());
+
+            Serial.println("----------------------------------------------------------");
+
+            // Encode the listItem object as a JSON string (see the library docs)
+            // Check the maximum transfer unit capacity for Bluetooth low energy
+            const size_t CAPACITY = JSON_OBJECT_SIZE(4096);
+            DynamicJsonDocument responseDocument(CAPACITY);
+            JsonObject object = responseDocument.to<JsonObject>();
+
+            // Here the list item is simply copied to the output document
+            object.set(listItem);
+
+            // the responseString will store the endoed JSON object
+            String responseString;
+            serializeJson(responseDocument, responseString);
+
+            Serial.println(responseString);
+            // Copy and paste the printed JSON strings to the following website to check their size
+            // https://www.debugbear.com/json-size-analyzer
+
+            // Add a small delay (100-200ms)
+            delay(100);
+            index++;
+        }
+    }
+}
+
+void loop()
+{
+    // put your main code here, to run repeatedly:
+}
+
+// JSON array structure
+/*
+[
+  {
+    "id": 1,
+    "name": "Ainslie Adlem",
+    "occupation": "Geologist III",
+    "gender": "M",
+    "image": "http://dummyimage.com/121x131.png/dddddd/000000",
+    "details": "Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem."
+  },
+  {
+    "id": 2,
+    "name": "Lexi Faircliffe",
+    "occupation": "Registered Nurse",
+    "gender": "F",
+    "image": "http://dummyimage.com/122x174.png/5fa2dd/ffffff",
+    "details": "Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis."
+  },
+  {
+    "id": 3,
+    "name": "Issy Deluca",
+    "occupation": "Professor",
+    "gender": "F",
+    "image": "http://dummyimage.com/127x117.png/ff4444/ffffff",
+    "details": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum."
+  },
+  {
+    "id": 4,
+    "name": "Rahal Abthorpe",
+    "occupation": "Software Consultant",
+    "gender": "M",
+    "image": "http://dummyimage.com/203x131.png/5fa2dd/ffffff",
+    "details": "In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus."
+  },
+  {
+    "id": 5,
+    "name": "Fairleigh Few",
+    "occupation": "Help Desk Technician",
+    "gender": "F",
+    "image": "http://dummyimage.com/112x165.png/dddddd/000000",
+    "details": "Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem."
+  },
+  {
+    "id": 6,
+    "name": "Harlene Feechan",
+    "occupation": "Staff Accountant I",
+    "gender": "M",
+    "image": "http://dummyimage.com/164x240.png/5fa2dd/ffffff",
+    "details": "Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl."
+  },
+  {
+    "id": 7,
+    "name": "Juana McKeeman",
+    "occupation": "Senior Sales Associate",
+    "gender": "M",
+    "image": "http://dummyimage.com/248x151.png/ff4444/ffffff",
+    "details": "Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam."
+  },
+  {
+    "id": 8,
+    "name": "Clayson Rojahn",
+    "occupation": "General Manager",
+    "gender": "F",
+    "image": "http://dummyimage.com/119x193.png/cc0000/ffffff",
+    "details": "Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst."
+  },
+  {
+    "id": 9,
+    "name": "Cecilius Stileman",
+    "occupation": "Accounting Assistant III",
+    "gender": "F",
+    "image": "http://dummyimage.com/108x156.png/5fa2dd/ffffff",
+    "details": "Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus."
+  },
+  {
+    "id": 10,
+    "name": "Selma Fant",
+    "occupation": "Product Engineer",
+    "gender": "F",
+    "image": "http://dummyimage.com/158x227.png/cc0000/ffffff",
+    "details": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum."
+  }
+]
+*/
